@@ -1,0 +1,15 @@
+{% if recent %}
+<div class="space-y-2">
+    {% for movie in recent %}
+    <div class="flex items-center gap-3 py-1.5 border-b border-gray-800 last:border-0">
+        <div class="w-8 h-8 bg-blue-900/40 rounded flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">M</div>
+        <div>
+            <p class="text-sm text-gray-200">{{ movie.title }}</p>
+            <p class="text-xs text-gray-500">{{ movie.year }}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">No recent movies.</p>
+{% endif %}

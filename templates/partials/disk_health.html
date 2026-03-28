@@ -1,0 +1,27 @@
+{% if disks %}
+<div class="space-y-2">
+    {% for disk in disks %}
+    <div class="flex items-center gap-3 py-2 border-b border-gray-800 last:border-0">
+        <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-2">
+                <span class="text-sm text-gray-200 font-mono">{{ disk.name }}</span>
+                <span class="text-xs text-gray-500">{{ disk.size_tb }} TB</span>
+            </div>
+        </div>
+        {% if disk.temperature is not none %}
+        <span class="text-xs {% if disk.temperature > 50 %}text-red-400{% elif disk.temperature > 45 %}text-yellow-400{% else %}text-gray-400{% endif %}">
+            {{ disk.temperature }}°C
+        </span>
+        {% endif %}
+        <span class="text-xs px-2 py-0.5 rounded-full shrink-0
+            {% if disk.smart_status == 'PASSED' or disk.smart_status == 'OK' %}bg-green-900/50 text-green-400
+            {% elif disk.smart_status == 'FAILED' %}bg-red-900/50 text-red-400
+            {% else %}bg-gray-800 text-gray-400{% endif %}">
+            {{ disk.smart_status }}
+        </span>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">No disk data available.</p>
+{% endif %}

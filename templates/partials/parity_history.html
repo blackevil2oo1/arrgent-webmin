@@ -1,0 +1,30 @@
+{% if parity_history %}
+<div class="overflow-x-auto">
+    <table class="w-full text-sm">
+        <thead>
+            <tr class="text-xs text-gray-500 border-b border-gray-800">
+                <th class="text-left pb-2">Datum</th>
+                <th class="text-left pb-2">Dauer</th>
+                <th class="text-left pb-2">Speed</th>
+                <th class="text-left pb-2">Status</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for p in parity_history %}
+            <tr class="border-b border-gray-800/50 last:border-0">
+                <td class="py-1.5 text-gray-300">{{ p.date }}</td>
+                <td class="py-1.5 text-gray-400">{{ p.duration }}</td>
+                <td class="py-1.5 text-gray-400">{{ p.speed }}</td>
+                <td class="py-1.5">
+                    <span class="text-xs px-2 py-0.5 rounded {% if p.status == 'OK' or p.status == 'Corrected' %}bg-green-900/50 text-green-400{% else %}bg-gray-800 text-gray-400{% endif %}">
+                        {{ p.status }}
+                    </span>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">Keine Parity-Historie.</p>
+{% endif %}

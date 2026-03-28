@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">Prowlarr — Indexer</h1>
+        {% if status and status.version is defined %}
+        <span class="text-xs text-gray-500">v{{ status.version }}</span>
+        {% endif %}
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">Prowlarr is not configured.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    {% if status and status.error is defined %}
+    <div class="bg-red-900/30 border border-red-700 rounded-xl p-4">
+        <p class="text-red-400 text-sm">Connection error: {{ status.error }}</p>
+    </div>
+    {% endif %}
+
+    <!-- Indexers -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Indexer ({{ indexers | length }})</h2>
+            <div class="flex gap-3 text-xs text-gray-500">
+                <span class="text-green-400">{{ indexers | selectattr('enabled') | list | length }} aktiv</span>
+                <span class="text-gray-600">{{ indexers | rejectattr('enabled') | list | length }} deaktiviert</span>
+            </div>
+        </div>
+        {% if indexers %}
+        <div class="space-y-1">
+            {% for idx in indexers %}
+            <div class="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <span class="w-2 h-2 rounded-full shrink-0 {% if idx.enabled %}bg-green-400{% else %}bg-gray-600{% endif %}"></span>
+                    <div class="min-w-0">
+                        <p class="text-sm text-gray-200 truncate">{{ idx.name }}</p>
+                        <p class="text-xs text-gray-500">{{ idx.protocol }}{% if idx.privacy %} · {{ idx.privacy }}{% endif %}</p>
+                    </div>
+                </div>
+                <span class="text-xs text-gray-600 shrink-0 ml-2">Prio {{ idx.priority }}</span>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">Keine Indexer konfiguriert.</p>
+        {% endif %}
+    </div>
+
+    <!-- Recent History -->
+    {% if history %}
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Letzte Suchanfragen</h2>
+        <div class="space-y-1">
+            {% for h in history %}
+            <div class="flex items-center justify-between py-1.5 border-b border-gray-800 last:border-0">
+                <div class="min-w-0 flex-1">
+                    <p class="text-sm text-gray-200 truncate">{{ h.query or "—" }}</p>
+                    <p class="text-xs text-gray-500">{{ h.indexer }}{% if h.date %} · {{ h.date }}{% endif %}</p>
+                </div>
+                <span class="text-xs shrink-0 ml-2 {% if h.successful %}text-green-400{% else %}text-red-400{% endif %}">
+                    {{ 'OK' if h.successful else 'Fail' }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

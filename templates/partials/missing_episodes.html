@@ -1,0 +1,20 @@
+{% if missing %}
+<div class="space-y-1">
+    {% for ep in missing %}
+    <div class="flex items-center gap-3 bg-gray-800 rounded-lg px-3 py-2 text-sm">
+        <span class="text-blue-400 font-mono text-xs shrink-0">
+            S{{ "%02d"|format(ep.season) }}E{{ "%02d"|format(ep.episode) }}
+        </span>
+        <div class="min-w-0 flex-1">
+            <span class="text-gray-200 truncate block">{{ ep.series_title }}</span>
+            {% if ep.title %}<span class="text-gray-500 text-xs truncate block">{{ ep.title }}</span>{% endif %}
+        </div>
+        {% if ep.air_date %}
+        <span class="text-gray-600 text-xs shrink-0">{{ ep.air_date }}</span>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm text-center py-6">Keine fehlenden Episoden – alles vollständig!</p>
+{% endif %}

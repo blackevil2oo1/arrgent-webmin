@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6 max-w-2xl">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">Settings</h1>
+    </div>
+
+    {% if saved %}
+    <div class="bg-green-900/30 border border-green-700 rounded-xl p-4 text-green-300 text-sm">
+        Settings saved successfully.
+    </div>
+    {% endif %}
+
+    <p class="text-xs text-gray-500">URLs and API keys are configured via environment variables in the Docker template. Here you can enable or disable individual services.</p>
+
+    <form action="/settings" method="post" class="space-y-3">
+
+        {% set apps = [
+            ("radarr",     "Radarr",            "blue"),
+            ("sonarr",     "Sonarr",             "purple"),
+            ("sabnzbd",    "SABnzbd",            "yellow"),
+            ("jellyfin",   "Jellyfin",           "blue"),
+            ("docker",     "Docker",             "blue"),
+            ("system",     "System (Unraid)",    "orange"),
+            ("fileflows",  "FileFlows",          "orange"),
+            ("jellyseerr", "Jellyseerr",         "indigo"),
+            ("prowlarr",   "Prowlarr",           "blue"),
+            ("huntarr",    "Huntarr",            "purple"),
+            ("chat",       "Chat (AI Assistant)","green"),
+        ] %}
+
+        {% for app_id, app_label, color in apps %}
+        {% set app_cfg = settings.apps[app_id] %}
+        <div class="bg-gray-900 rounded-xl border border-gray-800 px-4 py-3 flex items-center justify-between">
+            <div class="flex items-center gap-3">
+                <span class="text-sm font-medium text-gray-200">{{ app_label }}</span>
+                <span class="text-xs px-2 py-0.5 rounded {% if app_cfg.enabled %}bg-green-900/50 text-green-400{% else %}bg-gray-800 text-gray-500{% endif %}">
+                    {% if app_cfg.enabled %}Enabled{% else %}Disabled{% endif %}
+                </span>
+            </div>
+            <div class="flex items-center gap-3">
+                <button type="button"
+                    hx-post="/settings/test/{{ app_id }}"
+                    hx-target="#test-{{ app_id }}"
+                    class="text-xs text-blue-400 hover:text-blue-300 border border-gray-700 px-2 py-1 rounded-lg">
+                    Test
+                </button>
+                <span id="test-{{ app_id }}" class="text-xs w-24 text-right"></span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" name="{{ app_id }}_enabled" {% if app_cfg.enabled %}checked{% endif %}
+                        class="sr-only peer">
+                    <div class="w-9 h-5 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-blue-600"></div>
+                </label>
+            </div>
+        </div>
+        {% endfor %}
+
+        <button type="submit" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-medium py-3 rounded-xl transition-colors mt-2">
+            Save Settings
+        </button>
+    </form>
+
+</div>
+{% endblock %}

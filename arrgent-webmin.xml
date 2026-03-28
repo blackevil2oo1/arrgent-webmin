@@ -1,0 +1,63 @@
+<?xml version="1.0"?>
+<Container version="2">
+  <Name>arrgent-webmin</Name>
+  <Repository>blackevil2oo1/arrgent-webmin:latest</Repository>
+  <Registry>https://hub.docker.com/r/blackevil2oo1/arrgent-webmin</Registry>
+  <Network>host</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/blackevil2oo1/arrgent-webmin/issues</Support>
+  <Project>https://github.com/blackevil2oo1/arrgent-webmin</Project>
+  <Overview>Unified Admin Dashboard for Unraid media server infrastructure. Manages Radarr, Sonarr, SABnzbd, Jellyfin, Jellyseerr, FileFlows, Prowlarr, Huntarr, Docker containers and Unraid system via a single mobile-friendly web UI.</Overview>
+  <Category>Tools: MediaApp:Other</Category>
+  <WebUI>http://[IP]:8088/</WebUI>
+  <TemplateURL>https://raw.githubusercontent.com/blackevil2oo1/arrgent-webmin/main/arrgent-webmin.xml</TemplateURL>
+  <Icon>https://raw.githubusercontent.com/blackevil2oo1/arrgent-webmin/main/static/icon.png</Icon>
+  <ExtraParams/>
+  <PostArgs/>
+  <CPUset/>
+  <DateInstalled/>
+  <DonateText/>
+  <DonateLink/>
+  <Requires/>
+
+  <Config Name="Appdata" Target="/data" Default="/mnt/user/appdata/arrgent-webmin" Mode="rw" Description="Persistent data directory (settings, auth)" Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/arrgent-webmin</Config>
+  <Config Name="Docker Socket" Target="/var/run/docker.sock" Default="/var/run/docker.sock" Mode="rw" Description="Docker socket for container management" Type="Path" Display="always" Required="true" Mask="false">/var/run/docker.sock</Config>
+  <Config Name="Filesystem Root" Target="/mnt" Default="/mnt" Mode="rw" Description="Root path for the file manager" Type="Path" Display="always" Required="true" Mask="false">/mnt</Config>
+
+  <Config Name="Admin Password" Target="ADMIN_PASSWORD" Default="admin" Mode="" Description="Login password for the web UI" Type="Variable" Display="always" Required="true" Mask="true">admin</Config>
+  <Config Name="Session Secret" Target="SESSION_SECRET" Default="" Mode="" Description="JWT session secret. Leave empty to auto-generate." Type="Variable" Display="advanced" Required="false" Mask="true"></Config>
+
+  <Config Name="Radarr URL" Target="RADARR_URL" Default="http://tower:7878" Mode="" Description="Radarr base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Radarr API Key" Target="RADARR_API_KEY" Default="" Mode="" Description="Radarr API key (Settings &#x2192; General)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="Sonarr URL" Target="SONARR_URL" Default="http://tower:8989" Mode="" Description="Sonarr base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Sonarr API Key" Target="SONARR_API_KEY" Default="" Mode="" Description="Sonarr API key (Settings &#x2192; General)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="SABnzbd URL" Target="SABNZBD_URL" Default="http://tower:8080" Mode="" Description="SABnzbd base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="SABnzbd API Key" Target="SABNZBD_API_KEY" Default="" Mode="" Description="SABnzbd API key (Config &#x2192; General)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="Jellyfin URL" Target="JELLYFIN_URL" Default="http://tower:8096" Mode="" Description="Jellyfin base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Jellyfin API Key" Target="JELLYFIN_API_KEY" Default="" Mode="" Description="Jellyfin API key (Dashboard &#x2192; API Keys)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="Unraid URL" Target="UNRAID_URL" Default="http://tower" Mode="" Description="Unraid server URL (for GraphQL API)" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Unraid API Key" Target="UNRAID_API_KEY" Default="" Mode="" Description="Unraid API key (Settings &#x2192; Management Access)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="Jellyseerr URL" Target="JELLYSEERR_URL" Default="http://tower:5055" Mode="" Description="Jellyseerr base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Jellyseerr API Key" Target="JELLYSEERR_API_KEY" Default="" Mode="" Description="Jellyseerr API key (Settings &#x2192; General)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="FileFlows URL" Target="FILEFLOWS_URL" Default="http://tower:19200" Mode="" Description="FileFlows base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="FileFlows Container Name" Target="FILEFLOWS_CONTAINER_NAME" Default="fileflows" Mode="" Description="Docker container name for Start/Stop button" Type="Variable" Display="always" Required="false" Mask="false">fileflows</Config>
+
+  <Config Name="Prowlarr URL" Target="PROWLARR_URL" Default="http://tower:9696" Mode="" Description="Prowlarr base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+  <Config Name="Prowlarr API Key" Target="PROWLARR_API_KEY" Default="" Mode="" Description="Prowlarr API key (Settings &#x2192; General)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+
+  <Config Name="Huntarr URL" Target="HUNTARR_URL" Default="http://tower:9705" Mode="" Description="Huntarr base URL" Type="Variable" Display="always" Required="false" Mask="false"></Config>
+
+  <Config Name="OpenAI API Key" Target="OPENAI_API_KEY" Default="" Mode="" Description="OpenAI API key for AI Chat feature (optional)" Type="Variable" Display="always" Required="false" Mask="true"></Config>
+  <Config Name="OpenAI Model" Target="OPENAI_MODEL" Default="gpt-4o" Mode="" Description="OpenAI model (gpt-4o, gpt-4o-mini, ...)" Type="Variable" Display="advanced" Required="false" Mask="false">gpt-4o</Config>
+
+  <Config Name="Files Root" Target="FILES_ROOT" Default="/mnt" Mode="" Description="Root path shown in the file manager" Type="Variable" Display="advanced" Required="false" Mask="false">/mnt</Config>
+  <Config Name="Timezone" Target="TZ" Default="Europe/Berlin" Mode="" Description="Container timezone" Type="Variable" Display="advanced" Required="false" Mask="false">Europe/Berlin</Config>
+</Container>

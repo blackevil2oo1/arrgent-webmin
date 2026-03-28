@@ -1,0 +1,17 @@
+{% if recent %}
+<div class="space-y-2">
+    {% for item in recent %}
+    <div class="flex items-center gap-3 py-1.5 border-b border-gray-800 last:border-0">
+        <span class="text-xs px-2 py-0.5 rounded shrink-0 {% if item.type == 'Movie' %}bg-blue-900/50 text-blue-300{% elif item.type == 'Episode' %}bg-green-900/50 text-green-300{% else %}bg-purple-900/50 text-purple-300{% endif %}">
+            {{ item.type[:3] }}
+        </span>
+        <div class="min-w-0 flex-1">
+            <p class="text-sm text-gray-200 truncate">{{ item.title }}</p>
+            <p class="text-xs text-gray-500">{% if item.year %}{{ item.year }}{% endif %}{% if item.date_created %} · {{ item.date_created }}{% endif %}</p>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">No recent media.</p>
+{% endif %}

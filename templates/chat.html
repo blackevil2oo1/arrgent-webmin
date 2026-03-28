@@ -1,0 +1,125 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="flex flex-col h-[calc(100vh-8rem)] md:h-[calc(100vh-5rem)]">
+    <!-- Chat header -->
+    <div class="flex items-center justify-between mb-3">
+        <h1 class="text-lg font-bold text-gray-100">AI Assistant</h1>
+        <button
+            hx-post="/chat/clear"
+            hx-target="#chat-messages"
+            hx-swap="outerHTML"
+            class="text-gray-600 hover:text-gray-400 text-xs border border-gray-700 px-3 py-1.5 rounded-lg"
+        >Clear</button>
+    </div>
+
+    <!-- Messages area -->
+    <div
+        id="chat-messages"
+        class="flex-1 overflow-y-auto bg-gray-900 rounded-xl border border-gray-800 p-4 flex flex-col gap-3 mb-3"
+    >
+        {% if not history %}
+        <div class="flex items-center justify-center h-full">
+            <div class="text-center">
+                <div class="text-4xl mb-3">💬</div>
+                <p class="text-gray-500 text-sm">Ask me anything about your media server.</p>
+                <p class="text-gray-600 text-xs mt-1">e.g. "Add Inception to Radarr" or "What's downloading?"</p>
+            </div>
+        </div>
+        {% else %}
+            {% for msg in history %}
+            {% if msg.role == 'user' %}
+            <div class="flex justify-end">
+                <div class="max-w-xs lg:max-w-md xl:max-w-lg bg-blue-600 text-white rounded-2xl rounded-tr-sm px-4 py-2 text-sm">
+                    {{ msg.content | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+            {% elif msg.role == 'assistant' %}
+            <div class="flex justify-start">
+                <div class="max-w-xs lg:max-w-md xl:max-w-lg bg-gray-700 text-gray-100 rounded-2xl rounded-tl-sm px-4 py-2 text-sm">
+                    {{ msg.content | replace('\n', '<br>') | safe }}
+                </div>
+            </div>
+            {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+
+    <!-- Loading indicator -->
+    <div id="chat-loading" class="hidden mb-2">
+        <div class="flex justify-start">
+            <div class="bg-gray-700 rounded-2xl rounded-tl-sm px-4 py-3 flex items-center gap-2">
+                <div class="flex gap-1">
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 0ms"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 150ms"></div>
+                    <div class="w-2 h-2 bg-gray-400 rounded-full animate-bounce" style="animation-delay: 300ms"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Input form -->
+    <form
+        id="chat-form"
+        hx-post="/chat/message"
+        hx-target="#chat-messages"
+        hx-swap="beforeend"
+        class="flex gap-2"
+    >
+        <input
+            type="text"
+            name="message"
+            id="chat-input"
+            placeholder="Ask anything..."
+            required
+            autocomplete="off"
+            class="flex-1 bg-gray-800 border border-gray-700 rounded-xl px-4 py-3 text-sm text-gray-100 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500"
+        >
+        <button
+            type="submit"
+            id="send-btn"
+            class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-3 rounded-xl transition-colors"
+        >
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/>
+            </svg>
+        </button>
+    </form>
+</div>
+
+<script>
+// Auto-scroll to bottom of chat
+function scrollToBottom() {
+    const messages = document.getElementById('chat-messages');
+    if (messages) {
+        messages.scrollTop = messages.scrollHeight;
+    }
+}
+
+scrollToBottom();
+
+// Show loading indicator while request is in-flight
+const form = document.getElementById('chat-form');
+const loading = document.getElementById('chat-loading');
+const input = document.getElementById('chat-input');
+
+form.addEventListener('htmx:beforeRequest', function() {
+    if (loading) loading.classList.remove('hidden');
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) sendBtn.disabled = true;
+});
+
+form.addEventListener('htmx:afterRequest', function() {
+    if (loading) loading.classList.add('hidden');
+    const sendBtn = document.getElementById('send-btn');
+    if (sendBtn) sendBtn.disabled = false;
+    // Clear input
+    if (input) input.value = '';
+    scrollToBottom();
+});
+
+// Scroll to bottom when new content is added
+document.getElementById('chat-messages').addEventListener('htmx:afterSwap', function() {
+    scrollToBottom();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">Docker Containers</h1>
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">Docker is not enabled.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    <div
+        id="containers-list"
+        hx-get="/docker/partial/status"
+        hx-trigger="every 10s"
+        hx-swap="innerHTML"
+        data-poll-url="/docker/partial/status"
+        data-poll-interval="every 10s"
+    >
+        {% if containers %}
+            {% if containers is mapping and containers.error is defined %}
+            <div class="bg-red-900/30 border border-red-700 rounded-xl p-4 text-red-300">{{ containers.error }}</div>
+            {% else %}
+            {% include "partials/docker_containers.html" %}
+            {% endif %}
+        {% else %}
+        <p class="text-gray-500 text-sm">Loading...</p>
+        {% endif %}
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

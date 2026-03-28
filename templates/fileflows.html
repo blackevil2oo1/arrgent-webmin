@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">FileFlows</h1>
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">FileFlows is not configured.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    <!-- Container Control -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Container: {{ container_name }}</h2>
+        </div>
+        <div class="flex gap-3">
+            <button
+                hx-post="/fileflows/container/start"
+                hx-target="#container-result"
+                hx-swap="innerHTML"
+                class="bg-green-700 hover:bg-green-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >Start</button>
+            <button
+                hx-post="/fileflows/container/stop"
+                hx-target="#container-result"
+                hx-swap="innerHTML"
+                class="bg-red-700 hover:bg-red-600 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+            >Stop</button>
+        </div>
+        <div id="container-result" class="mt-3"></div>
+    </div>
+
+    <!-- Processing Status -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Processing Status</h2>
+            <span class="text-xs text-gray-600">Updates every 5s</span>
+        </div>
+        <div
+            id="ff-status"
+            hx-get="/fileflows/partial/status"
+            hx-trigger="load, every 5s"
+            hx-swap="innerHTML"
+            data-poll-url="/fileflows/partial/status"
+            data-poll-interval="every 5s"
+        >
+            <p class="text-gray-500 text-sm">Lade...</p>
+        </div>
+    </div>
+
+    <!-- Space Savings (lazy load — can be slow with many files) -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div class="flex items-center justify-between mb-4">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Total Space Saved</h2>
+            <button
+                hx-get="/fileflows/partial/savings"
+                hx-target="#ff-savings"
+                hx-swap="innerHTML"
+                class="text-blue-500 text-xs hover:text-blue-400">Aktualisieren</button>
+        </div>
+        <div
+            id="ff-savings"
+            hx-get="/fileflows/partial/savings"
+            hx-trigger="load"
+            hx-swap="innerHTML"
+        >
+            <p class="text-gray-500 text-sm">Lade... (kann etwas dauern)</p>
+        </div>
+    </div>
+
+    <!-- Nodes -->
+    {% if nodes %}
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Nodes</h2>
+        <div class="space-y-2">
+            {% for node in nodes %}
+            <div class="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
+                <div>
+                    <p class="text-sm text-gray-200">{{ node.name }}</p>
+                    <p class="text-xs text-gray-500">v{{ node.version }}</p>
+                </div>
+                <span class="text-xs text-gray-400">{{ node.runners }} runner(s)</span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+
+<style>
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+</style>
+{% endblock %}

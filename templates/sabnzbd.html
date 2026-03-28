@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">SABnzbd — Downloads</h1>
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">SABnzbd is not configured.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    <!-- Queue -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Queue</h2>
+            <div class="flex gap-2">
+                <button
+                    hx-post="/sabnzbd/pause"
+                    hx-target="#queue-container"
+                    hx-swap="innerHTML"
+                    class="bg-yellow-700 hover:bg-yellow-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                >Pause</button>
+                <button
+                    hx-post="/sabnzbd/resume"
+                    hx-target="#queue-container"
+                    hx-swap="innerHTML"
+                    class="bg-green-700 hover:bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-medium transition-colors"
+                >Resume</button>
+            </div>
+        </div>
+        <div
+            id="queue-container"
+            hx-get="/sabnzbd/partial/queue"
+            hx-trigger="every 5s"
+            hx-swap="innerHTML"
+            data-poll-url="/sabnzbd/partial/queue"
+            data-poll-interval="every 5s"
+        >
+            {% include "partials/sabnzbd_queue.html" %}
+        </div>
+    </div>
+
+    <!-- History -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">History</h2>
+        {% if history %}
+        <div class="space-y-2">
+            {% for item in history %}
+            <div class="flex items-start gap-3 py-2 border-b border-gray-800 last:border-0">
+                <div class="flex-1 min-w-0">
+                    <p class="text-sm text-gray-200 truncate">{{ item.name }}</p>
+                    <div class="flex items-center gap-2 mt-0.5">
+                        <span class="text-xs {% if item.status == 'Completed' %}text-green-400{% else %}text-red-400{% endif %}">{{ item.status }}</span>
+                        <span class="text-xs text-gray-500">{{ item.size }}</span>
+                        {% if item.completed %}<span class="text-xs text-gray-600">{{ item.completed }}</span>{% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No history.</p>
+        {% endif %}
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,14 @@
+{% if missing %}
+<div class="space-y-1">
+    {% for m in missing %}
+    <div class="flex items-center justify-between bg-gray-800 rounded-lg px-3 py-2 text-sm">
+        <div class="min-w-0 flex-1">
+            <span class="text-gray-200 truncate block">{{ m.title }}</span>
+            <span class="text-gray-500 text-xs">{{ m.year }}{% if m.status %} · {{ m.status }}{% endif %}</span>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm text-center py-6">Keine fehlenden Filme – alles vorhanden!</p>
+{% endif %}

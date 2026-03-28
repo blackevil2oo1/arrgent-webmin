@@ -1,0 +1,46 @@
+services:
+  arrgent-webmin:
+    image: blackevil2oo1/arrgent-webmin:latest
+    container_name: arrgent-webmin
+    restart: unless-stopped
+    network_mode: host
+    volumes:
+      - /mnt/user/appdata/arrgent-webmin:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+      - /mnt:/mnt
+    environment:
+      - TZ=Europe/Berlin
+      - PYTHONUNBUFFERED=1
+      - ADMIN_PASSWORD=admin
+      - SESSION_SECRET=
+      # Radarr
+      - RADARR_URL=http://tower:7878
+      - RADARR_API_KEY=
+      # Sonarr
+      - SONARR_URL=http://tower:8989
+      - SONARR_API_KEY=
+      # SABnzbd
+      - SABNZBD_URL=http://tower:8080
+      - SABNZBD_API_KEY=
+      # Jellyfin
+      - JELLYFIN_URL=http://tower:8096
+      - JELLYFIN_API_KEY=
+      # Unraid System
+      - UNRAID_URL=http://tower
+      - UNRAID_API_KEY=
+      # Jellyseerr
+      - JELLYSEERR_URL=http://tower:5055
+      - JELLYSEERR_API_KEY=
+      # FileFlows
+      - FILEFLOWS_URL=http://tower:19200
+      - FILEFLOWS_CONTAINER_NAME=fileflows
+      # Prowlarr
+      - PROWLARR_URL=http://tower:9696
+      - PROWLARR_API_KEY=
+      # Huntarr
+      - HUNTARR_URL=http://tower:9705
+      # OpenAI Chat (optional)
+      - OPENAI_API_KEY=
+      - OPENAI_MODEL=gpt-4o
+      # File Manager root path
+      - FILES_ROOT=/mnt

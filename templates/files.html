@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-4">
+    <h1 class="text-xl font-bold text-gray-100">Dateien</h1>
+    <div
+        id="file-browser"
+        hx-get="/files/browse?path={{ urlquote(initial_path) }}"
+        hx-trigger="load"
+        hx-swap="innerHTML"
+    >
+        <p class="text-gray-500 text-sm">Lade...</p>
+    </div>
+</div>
+{% endblock %}

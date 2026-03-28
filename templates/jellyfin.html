@@ -1,0 +1,78 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">Jellyfin</h1>
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">Jellyfin is not configured.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    <!-- Stats & Actions -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        {% if stats and stats.error is not defined %}
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-blue-400">{{ stats.total_movies }}</div>
+            <div class="text-xs text-gray-500 mt-1">Movies</div>
+        </div>
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-purple-400">{{ stats.total_series }}</div>
+            <div class="text-xs text-gray-500 mt-1">Series</div>
+        </div>
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-green-400">{{ stats.total_episodes }}</div>
+            <div class="text-xs text-gray-500 mt-1">Episodes</div>
+        </div>
+        {% endif %}
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 flex items-center justify-center">
+            <div id="scan-result">
+                <button
+                    hx-post="/jellyfin/scan"
+                    hx-target="#scan-result"
+                    hx-swap="innerHTML"
+                    class="bg-blue-600 hover:bg-blue-500 text-white px-4 py-2 rounded-lg text-sm font-medium transition-colors"
+                >Scan Library</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Media -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Recently Added</h2>
+        </div>
+        <div
+            id="recent-media"
+            hx-get="/jellyfin/partial/recent"
+            hx-trigger="every 30s"
+            hx-swap="innerHTML"
+            data-poll-url="/jellyfin/partial/recent"
+            data-poll-interval="every 30s"
+        >
+            {% if recent %}
+            <div class="space-y-2">
+                {% for item in recent %}
+                <div class="flex items-center gap-3 py-1.5 border-b border-gray-800 last:border-0">
+                    <span class="text-xs px-2 py-0.5 rounded shrink-0 {% if item.type == 'Movie' %}bg-blue-900/50 text-blue-300{% elif item.type == 'Episode' %}bg-green-900/50 text-green-300{% else %}bg-purple-900/50 text-purple-300{% endif %}">
+                        {{ item.type[:3] }}
+                    </span>
+                    <div class="min-w-0 flex-1">
+                        <p class="text-sm text-gray-200 truncate">{{ item.title }}</p>
+                        <p class="text-xs text-gray-500">{% if item.year %}{{ item.year }}{% endif %}{% if item.date_created %} · {{ item.date_created }}{% endif %}</p>
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+            {% else %}
+            <p class="text-gray-500 text-sm">No recent media.</p>
+            {% endif %}
+        </div>
+    </div>
+
+    {% endif %}
+</div>
+{% endblock %}

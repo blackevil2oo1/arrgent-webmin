@@ -1,0 +1,22 @@
+{% if metrics %}
+<div class="grid grid-cols-2 gap-4">
+    <div>
+        <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-400">CPU</span>
+            <span class="text-gray-300">{{ metrics.cpu_pct }}%</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all {% if metrics.cpu_pct > 85 %}bg-red-500{% elif metrics.cpu_pct > 60 %}bg-yellow-500{% else %}bg-blue-500{% endif %}" style="width: {{ metrics.cpu_pct }}%"></div>
+        </div>
+    </div>
+    <div>
+        <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-400">RAM</span>
+            <span class="text-gray-300">{{ metrics.ram_used_gb }} / {{ metrics.ram_total_gb }} GB</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2">
+            <div class="h-2 rounded-full transition-all {% if metrics.ram_pct > 85 %}bg-red-500{% elif metrics.ram_pct > 70 %}bg-yellow-500{% else %}bg-green-500{% endif %}" style="width: {{ metrics.ram_pct }}%"></div>
+        </div>
+    </div>
+</div>
+{% endif %}

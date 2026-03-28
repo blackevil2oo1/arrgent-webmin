@@ -1,0 +1,35 @@
+{% if queue %}
+<div class="space-y-3">
+    <div class="flex items-center justify-between">
+        <div class="flex items-center gap-3">
+            <span class="text-sm font-medium {% if queue.status == 'Paused' %}text-yellow-400{% else %}text-green-400{% endif %}">{{ queue.status }}</span>
+            <span class="text-sm text-gray-400">{{ queue.speed }}</span>
+        </div>
+        <div class="text-xs text-gray-500">{{ queue.size_left }} · {{ queue.time_left }}</div>
+    </div>
+
+    {% if queue['items'] %}
+    <div class="space-y-3">
+        {% for item in queue['items'] %}
+        <div class="bg-gray-800 rounded-lg p-3">
+            <div class="flex items-center justify-between mb-2">
+                <p class="text-sm text-gray-200 truncate flex-1 mr-2">{{ item.filename }}</p>
+                <span class="text-xs {% if item.status == 'Paused' %}text-yellow-400{% else %}text-blue-400{% endif %} shrink-0">{{ item.status }}</span>
+            </div>
+            <div class="flex items-center gap-2">
+                <div class="flex-1 bg-gray-700 rounded-full h-2">
+                    <div class="bg-blue-500 h-2 rounded-full transition-all" style="width: {{ item.percentage }}%"></div>
+                </div>
+                <span class="text-xs text-gray-400 shrink-0">{{ item.percentage }}%</span>
+                <span class="text-xs text-gray-500 shrink-0">{{ item.size }}</span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p class="text-gray-500 text-sm text-center py-4">Queue is empty</p>
+    {% endif %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">No queue data</p>
+{% endif %}

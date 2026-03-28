@@ -1,0 +1,38 @@
+{% if status %}
+<div class="grid grid-cols-2 gap-4">
+    <div>
+        <p class="text-xs text-gray-500 mb-1">Array State</p>
+        <p class="text-sm font-medium {% if status.array_state == 'Started' %}text-green-400{% else %}text-yellow-400{% endif %}">{{ status.array_state }}</p>
+    </div>
+    {% if status.uptime_since %}
+    <div>
+        <p class="text-xs text-gray-500 mb-1">Uptime Since</p>
+        <p class="text-sm text-gray-300">{{ status.uptime_since[:16] if status.uptime_since else '—' }}</p>
+    </div>
+    {% endif %}
+    {% if status.ram_pct is defined %}
+    <div class="col-span-2">
+        <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-500">RAM</span>
+            <span class="text-gray-300">{{ status.ram_used_gb }} GB / {{ status.ram_total_gb }} GB ({{ status.ram_pct }}%)</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2">
+            <div class="h-2 rounded-full {% if status.ram_pct > 85 %}bg-red-500{% elif status.ram_pct > 70 %}bg-yellow-500{% else %}bg-green-500{% endif %}" style="width: {{ status.ram_pct }}%"></div>
+        </div>
+    </div>
+    {% endif %}
+    {% if status.array_total_tb %}
+    <div class="col-span-2">
+        {% set used_pct = ((status.array_used_tb / status.array_total_tb) * 100) | int if status.array_total_tb else 0 %}
+        <div class="flex justify-between text-xs mb-1">
+            <span class="text-gray-500">Array Storage</span>
+            <span class="text-gray-300">{{ status.array_used_tb }} TB used / {{ status.array_total_tb }} TB total ({{ used_pct }}%)</span>
+        </div>
+        <div class="w-full bg-gray-700 rounded-full h-2">
+            <div class="h-2 rounded-full {% if used_pct > 85 %}bg-red-500{% elif used_pct > 70 %}bg-yellow-500{% else %}bg-blue-500{% endif %}" style="width: {{ used_pct }}%"></div>
+        </div>
+        <p class="text-xs text-gray-600 mt-1">{{ status.array_free_tb }} TB free</p>
+    </div>
+    {% endif %}
+</div>
+{% endif %}

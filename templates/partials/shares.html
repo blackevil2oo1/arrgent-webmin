@@ -1,0 +1,12 @@
+{% if shares %}
+<div class="space-y-0">
+    {% for s in shares %}
+    <div class="flex justify-between items-center py-2 border-b border-gray-800 last:border-0">
+        <span class="text-sm text-gray-300 font-medium">{{ s.name }}</span>
+        <span class="text-xs text-gray-500">{{ s.free_gb }} GB frei</span>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">Keine Shares gefunden.</p>
+{% endif %}

@@ -1,0 +1,104 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">Jellyseerr — Requests</h1>
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">Jellyseerr is not configured.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    <!-- Stats -->
+    {% if counts and counts.error is not defined %}
+    <div class="grid grid-cols-3 gap-3">
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-blue-400">{{ counts.total }}</div>
+            <div class="text-xs text-gray-500 mt-1">Total</div>
+        </div>
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold {% if counts.pending > 0 %}text-yellow-400{% else %}text-gray-400{% endif %}">{{ counts.pending }}</div>
+            <div class="text-xs text-gray-500 mt-1">Pending</div>
+        </div>
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-green-400">{{ counts.available }}</div>
+            <div class="text-xs text-gray-500 mt-1">Available</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Pending Requests -->
+    {% if pending %}
+    <div class="bg-gray-900 rounded-xl border border-yellow-900/40 p-4">
+        <h2 class="text-sm font-semibold text-yellow-400 uppercase tracking-wide mb-3">Pending Approval ({{ pending | length }})</h2>
+        <div class="space-y-2">
+            {% for req in pending %}
+            <div class="flex items-center justify-between bg-gray-800/50 rounded-lg px-3 py-2.5" id="req-{{ req.id }}">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <span class="text-xs px-1.5 py-0.5 rounded shrink-0 {% if req.type == 'movie' %}bg-blue-900/50 text-blue-300{% else %}bg-purple-900/50 text-purple-300{% endif %}">
+                        {{ 'M' if req.type == 'movie' else 'TV' }}
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm text-gray-200 truncate">{{ req.title }}</p>
+                        <p class="text-xs text-gray-500">{{ req.requested_by }}{% if req.created_at %} · {{ req.created_at }}{% endif %}</p>
+                    </div>
+                </div>
+                <div class="flex gap-2 shrink-0 ml-2" id="req-actions-{{ req.id }}">
+                    <button
+                        hx-post="/jellyseerr/request/{{ req.id }}/approve"
+                        hx-target="#req-actions-{{ req.id }}"
+                        hx-swap="innerHTML"
+                        class="text-xs bg-green-700 hover:bg-green-600 text-white px-2.5 py-1 rounded transition-colors"
+                    >Approve</button>
+                    <button
+                        hx-post="/jellyseerr/request/{{ req.id }}/decline"
+                        hx-target="#req-actions-{{ req.id }}"
+                        hx-swap="innerHTML"
+                        class="text-xs bg-red-700 hover:bg-red-600 text-white px-2.5 py-1 rounded transition-colors"
+                    >Decline</button>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% elif counts and counts.pending == 0 %}
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-6 text-center">
+        <p class="text-gray-500 text-sm">No pending requests.</p>
+    </div>
+    {% endif %}
+
+    <!-- Recent Requests -->
+    {% if recent %}
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Recent Requests</h2>
+        <div class="space-y-1">
+            {% for req in recent %}
+            <div class="flex items-center justify-between py-1.5 border-b border-gray-800 last:border-0">
+                <div class="flex items-center gap-3 min-w-0 flex-1">
+                    <span class="text-xs shrink-0 {% if req.type == 'movie' %}text-blue-400{% else %}text-purple-400{% endif %}">
+                        {{ 'M' if req.type == 'movie' else 'TV' }}
+                    </span>
+                    <div class="min-w-0">
+                        <p class="text-sm text-gray-200 truncate">{{ req.title }}</p>
+                        <p class="text-xs text-gray-500">{{ req.requested_by }}</p>
+                    </div>
+                </div>
+                <span class="text-xs px-2 py-0.5 rounded shrink-0 ml-2
+                    {% if req.status_code == 4 %}bg-green-900/50 text-green-400
+                    {% elif req.status_code == 1 %}bg-yellow-900/50 text-yellow-400
+                    {% elif req.status_code == 3 %}bg-red-900/50 text-red-400
+                    {% else %}bg-gray-800 text-gray-400{% endif %}">
+                    {{ req.status }}
+                </span>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    {% endif %}
+</div>
+{% endblock %}

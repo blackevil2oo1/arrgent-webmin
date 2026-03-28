@@ -1,0 +1,96 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="space-y-6">
+    <!-- Header -->
+    <div class="flex items-center justify-between">
+        <h1 class="text-xl font-bold text-gray-100">Radarr — Movies</h1>
+    </div>
+
+    {% if not configured %}
+    <div class="bg-yellow-900/30 border border-yellow-700 rounded-xl p-6 text-center">
+        <p class="text-yellow-300 mb-2">Radarr is not configured.</p>
+        <a href="/settings" class="text-blue-400 underline">Go to Settings</a>
+    </div>
+    {% else %}
+
+    <!-- Stats -->
+    {% if stats and stats.error is not defined %}
+    <div class="grid grid-cols-3 gap-3">
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-blue-400">{{ stats.total_movies }}</div>
+            <div class="text-xs text-gray-500 mt-1">Total</div>
+        </div>
+        <div class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center">
+            <div class="text-2xl font-bold text-green-400">{{ stats.monitored }}</div>
+            <div class="text-xs text-gray-500 mt-1">Monitored</div>
+        </div>
+        <div
+            class="bg-gray-900 rounded-xl border border-gray-800 p-4 text-center {% if stats.missing > 0 %}cursor-pointer hover:border-red-700 transition-colors{% endif %}"
+            {% if stats.missing > 0 %}
+            hx-get="/radarr/missing"
+            hx-target="#missing-panel"
+            hx-swap="innerHTML"
+            onclick="document.getElementById('missing-panel').scrollIntoView({behavior:'smooth'})"
+            {% endif %}
+        >
+            <div class="text-2xl font-bold {% if stats.missing > 0 %}text-red-400{% else %}text-gray-400{% endif %}">{{ stats.missing }}</div>
+            <div class="text-xs text-gray-500 mt-1">Missing{% if stats.missing > 0 %} ↓{% endif %}</div>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Missing Movies Panel (lazy loaded on click) -->
+    {% if stats and stats.missing > 0 %}
+    <div class="bg-gray-900 rounded-xl border border-red-900/50 p-4">
+        <div class="flex items-center justify-between mb-3">
+            <h2 class="text-sm font-semibold text-red-400 uppercase tracking-wide">Fehlende Filme ({{ stats.missing }})</h2>
+            <div class="flex gap-2">
+                <button
+                    hx-get="/radarr/missing"
+                    hx-target="#missing-panel"
+                    hx-swap="innerHTML"
+                    class="text-xs text-gray-400 hover:text-gray-200 transition-colors px-2 py-1 border border-gray-700 rounded"
+                >Liste laden</button>
+                <button
+                    hx-post="/radarr/search-missing"
+                    hx-target="#search-missing-result"
+                    hx-swap="innerHTML"
+                    class="text-xs bg-red-700 hover:bg-red-600 text-white px-3 py-1 rounded transition-colors font-medium"
+                >Alle suchen</button>
+            </div>
+        </div>
+        <div id="search-missing-result" class="mb-2"></div>
+        <div id="missing-panel" class="max-h-80 overflow-y-auto space-y-1">
+            <p class="text-gray-600 text-xs text-center py-2">Klicke auf "Liste laden" oder die Zahl oben</p>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- Recent Movies -->
+    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Recently Added</h2>
+        {% if recent %}
+        <div class="space-y-2">
+            {% for movie in recent %}
+            <div class="flex items-center gap-3 py-1.5 border-b border-gray-800 last:border-0">
+                <div class="w-8 h-8 bg-blue-900/40 rounded flex items-center justify-center text-blue-400 text-xs font-bold shrink-0">M</div>
+                <div>
+                    <p class="text-sm text-gray-200">{{ movie.title }}</p>
+                    <p class="text-xs text-gray-500">{{ movie.year }}</p>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <p class="text-gray-500 text-sm">No recent movies.</p>
+        {% endif %}
+    </div>
+
+    {% endif %}
+</div>
+
+<style>
+.htmx-indicator { display: none; }
+.htmx-request .htmx-indicator { display: inline-block; }
+</style>
+{% endblock %}

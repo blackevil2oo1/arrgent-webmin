@@ -1,0 +1,16 @@
+{% if updates %}
+<div class="space-y-2">
+    {% for s in updates %}
+    <div class="flex items-center gap-3 py-1.5 border-b border-gray-800 last:border-0">
+        <div class="w-8 h-8 bg-purple-900/40 rounded flex items-center justify-center text-purple-400 text-xs font-bold shrink-0">S</div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm text-gray-200 truncate">{{ s.title }}</p>
+            <p class="text-xs text-gray-500">{{ s.year }}</p>
+        </div>
+        <span class="text-xs bg-purple-900/30 text-purple-400 px-2 py-0.5 rounded-full shrink-0">+{{ s.episodes_added }} ep</span>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm">No series updates in the past 7 days.</p>
+{% endif %}

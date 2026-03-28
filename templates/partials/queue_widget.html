@@ -1,0 +1,15 @@
+<div class="space-y-2">
+    <div class="flex justify-between text-xs">
+        <span class="{% if queue.status == 'Paused' %}text-yellow-400{% else %}text-green-400{% endif %}">{{ queue.status }}</span>
+        <span class="text-gray-400">{{ queue.speed }}</span>
+    </div>
+    <div class="text-xs text-gray-500">{{ queue['items'] | length }} item(s) — {{ queue.size_left }} left</div>
+    {% for item in queue['items'][:3] %}
+    <div>
+        <div class="text-xs text-gray-300 truncate">{{ item.filename[:40] }}{% if item.filename | length > 40 %}…{% endif %}</div>
+        <div class="w-full bg-gray-700 rounded-full h-1 mt-1">
+            <div class="bg-blue-500 h-1 rounded-full" style="width: {{ item.percentage }}%"></div>
+        </div>
+    </div>
+    {% endfor %}
+</div>

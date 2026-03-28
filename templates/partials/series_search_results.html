@@ -1,0 +1,43 @@
+{% if results %}
+<div class="space-y-3">
+    {% for series in results %}
+    <div class="bg-gray-800 rounded-lg p-3">
+        <div class="flex items-start justify-between gap-2">
+            <div class="flex-1 min-w-0">
+                <div class="flex items-center gap-2">
+                    <p class="text-sm font-medium text-gray-100">{{ series.title }} ({{ series.year }})</p>
+                    {% if series.already_in_sonarr %}
+                    <span class="text-xs bg-green-900/50 text-green-400 px-2 py-0.5 rounded-full shrink-0">In Library</span>
+                    {% endif %}
+                </div>
+                {% if series.overview %}
+                <p class="text-xs text-gray-400 mt-1">{{ series.overview }}</p>
+                {% endif %}
+            </div>
+        </div>
+        {% if not series.already_in_sonarr %}
+        <form
+            hx-post="/sonarr/add"
+            hx-target="#action-result"
+            hx-swap="innerHTML"
+            class="mt-3 flex gap-2 items-center"
+        >
+            <input type="hidden" name="tvdb_id" value="{{ series.tvdb_id }}">
+            <input type="hidden" name="title" value="{{ series.title }}">
+            <input type="hidden" name="year" value="{{ series.year }}">
+            <select name="quality_profile_id" class="flex-1 bg-gray-700 border border-gray-600 rounded-lg px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500">
+                {% for p in profiles %}
+                <option value="{{ p.profile_id }}">{{ p.name }}</option>
+                {% endfor %}
+            </select>
+            <button type="submit" class="bg-purple-600 hover:bg-purple-500 text-white px-3 py-1.5 rounded-lg text-sm font-medium whitespace-nowrap transition-colors">
+                Add
+            </button>
+        </form>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-500 text-sm text-center py-4">No results found for "{{ query }}"</p>
+{% endif %}

@@ -1,0 +1,133 @@
+<!-- Breadcrumb -->
+<div class="flex items-center gap-1 text-sm mb-4 flex-wrap bg-gray-900 rounded-xl border border-gray-800 px-4 py-2">
+    {% for crumb in breadcrumbs %}
+    {% if not loop.last %}
+    <button
+        class="text-blue-400 hover:text-blue-300 font-medium"
+        hx-get="/files/browse?path={{ urlquote(crumb.path) }}"
+        hx-target="#file-browser"
+        hx-swap="innerHTML"
+    >{{ crumb.name }}</button>
+    <span class="text-gray-600">/</span>
+    {% else %}
+    <span class="text-gray-300 font-medium">{{ crumb.name }}</span>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- Toolbar -->
+<div class="flex items-center gap-2 mb-3">
+    <form
+        hx-post="/files/upload?path={{ urlquote(current_path) }}"
+        hx-target="#file-browser"
+        hx-swap="innerHTML"
+        hx-encoding="multipart/form-data"
+        hx-indicator="#upload-indicator"
+    >
+        <label class="cursor-pointer bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            Hochladen
+            <input type="file" name="file" class="hidden" onchange="this.form.requestSubmit()">
+        </label>
+    </form>
+    <span id="upload-indicator" class="htmx-indicator text-xs text-gray-400">Lade hoch...</span>
+    <button
+        onclick="document.getElementById('mkdir-form').classList.toggle('hidden')"
+        class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5"
+    >
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Neuer Ordner
+    </button>
+</div>
+
+<!-- New folder form -->
+<form
+    id="mkdir-form"
+    class="hidden flex items-center gap-2 mb-3"
+    hx-post="/files/mkdir"
+    hx-target="#file-browser"
+    hx-swap="innerHTML"
+>
+    <input type="hidden" name="path" value="{{ current_path }}">
+    <input
+        type="text"
+        name="name"
+        placeholder="Ordnername"
+        class="flex-1 bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-gray-100 focus:outline-none focus:border-blue-500"
+        autofocus
+    >
+    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg">Erstellen</button>
+    <button type="button" onclick="document.getElementById('mkdir-form').classList.add('hidden')" class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded-lg">Abbrechen</button>
+</form>
+
+<!-- File list -->
+{% if entries %}
+<div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+    {% for item in entries %}
+    <div id="entry-{{ loop.index }}" class="flex items-center gap-2 px-4 py-2.5 border-b border-gray-800 last:border-0 hover:bg-gray-800/40">
+        <!-- Icon -->
+        {% if item.is_dir %}
+        <svg class="w-4 h-4 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+        {% else %}
+        <svg class="w-4 h-4 text-gray-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/></svg>
+        {% endif %}
+
+        <!-- Name -->
+        {% if item.is_dir %}
+        <button
+            class="flex-1 text-left text-sm text-gray-200 truncate hover:text-white"
+            hx-get="/files/browse?path={{ urlquote(item.path) }}"
+            hx-target="#file-browser"
+            hx-swap="innerHTML"
+        >{{ item.name }}</button>
+        {% else %}
+        <span class="flex-1 text-sm text-gray-300 truncate">{{ item.name }}</span>
+        {% endif %}
+
+        <!-- Size -->
+        {% if not item.is_dir %}
+        <span class="text-xs text-gray-600 shrink-0 hidden sm:block">{{ item.size_fmt }}</span>
+        {% endif %}
+
+        <!-- Actions -->
+        <div class="flex items-center gap-0.5 shrink-0">
+            {% if not item.is_dir %}
+            <a
+                href="/files/download?path={{ urlquote(item.path) }}"
+                class="text-gray-500 hover:text-blue-400 p-1.5 rounded"
+                title="Herunterladen"
+            >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"/></svg>
+            </a>
+            {% endif %}
+            <button
+                class="text-gray-500 hover:text-yellow-400 p-1.5 rounded"
+                title="Umbenennen"
+                hx-get="/files/rename-form?path={{ urlquote(item.path) }}&index={{ loop.index }}"
+                hx-target="#entry-{{ loop.index }}"
+                hx-swap="outerHTML"
+            >
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+            </button>
+            <form
+                hx-post="/files/delete"
+                hx-target="#file-browser"
+                hx-swap="innerHTML"
+                hx-confirm="Wirklich löschen?"
+                class="inline"
+            >
+                <input type="hidden" name="path" value="{{ item.path }}">
+                <input type="hidden" name="current_path" value="{{ current_path }}">
+                <button type="submit" class="text-gray-500 hover:text-red-400 p-1.5 rounded" title="Löschen">
+                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                </button>
+            </form>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="text-gray-500 text-sm text-center py-12 bg-gray-900 rounded-xl border border-gray-800">
+    Leeres Verzeichnis
+</div>
+{% endif %}
