@@ -13,7 +13,7 @@
   <Category>Tools: MediaApp:Other</Category>
   <WebUI>http://[IP]:8088/</WebUI>
   <TemplateURL>https://raw.githubusercontent.com/blackevil2oo1/arrgent-webmin/main/arrgent-webmin.xml</TemplateURL>
-  <Icon>https://raw.githubusercontent.com/blackevil2oo1/arrgent-webmin/main/static/icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/blackevil2oo1/arrgent-webmin/main/static/icon.svg</Icon>
   <ExtraParams/>
   <PostArgs/>
   <CPUset/>
