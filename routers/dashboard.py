@@ -52,13 +52,13 @@ async def dashboard(request: Request, auth=Depends(require_auth)):
     if sys_cfg.enabled and sys_cfg.url:
         try:
             sys_ctrl = SystemController(sys_cfg.url, sys_cfg.api_key)
-            system_data = sys_ctrl.get_system_status()
+            system_data = await sys_ctrl.get_system_status()
             try:
-                system_data.update(sys_ctrl.get_live_metrics())
+                system_data.update(await sys_ctrl.get_live_metrics())
             except Exception:
                 pass
             try:
-                notifications = sys_ctrl.get_notifications()
+                notifications = await sys_ctrl.get_notifications()
             except Exception:
                 pass
         except Exception as e:
@@ -122,9 +122,9 @@ async def partial_system(request: Request, auth=Depends(require_auth)):
         return HTMLResponse(_not_configured_html("System"))
     try:
         sys_ctrl = SystemController(cfg.url, cfg.api_key)
-        status = sys_ctrl.get_system_status()
+        status = await sys_ctrl.get_system_status()
         try:
-            status.update(sys_ctrl.get_live_metrics())
+            status.update(await sys_ctrl.get_live_metrics())
         except Exception:
             pass
         return templates.TemplateResponse("partials/system_widget.html", {
@@ -141,7 +141,7 @@ async def partial_notifications(request: Request, auth=Depends(require_auth)):
     if not cfg.enabled or not cfg.url:
         return HTMLResponse("")
     try:
-        notifications = SystemController(cfg.url, cfg.api_key).get_notifications()
+        notifications = await SystemController(cfg.url, cfg.api_key).get_notifications()
         if not notifications:
             return HTMLResponse("")
         return templates.TemplateResponse("partials/notifications_banner.html", {
