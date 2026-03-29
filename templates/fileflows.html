@@ -52,7 +52,7 @@
         </div>
     </div>
 
-    <!-- Space Savings (lazy load — can be slow with many files) -->
+    <!-- Space Savings (manual load only — can be very slow with many files) -->
     <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
         <div class="flex items-center justify-between mb-4">
             <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide">Total Space Saved</h2>
@@ -60,35 +60,24 @@
                 hx-get="/fileflows/partial/savings"
                 hx-target="#ff-savings"
                 hx-swap="innerHTML"
-                class="text-blue-500 text-xs hover:text-blue-400">Aktualisieren</button>
+                hx-indicator="#savings-spinner"
+                class="text-blue-500 text-xs hover:text-blue-400 flex items-center gap-1">
+                <span id="savings-spinner" class="htmx-indicator">⏳</span>
+                Berechnen
+            </button>
         </div>
-        <div
-            id="ff-savings"
-            hx-get="/fileflows/partial/savings"
-            hx-trigger="load"
-            hx-swap="innerHTML"
-        >
-            <p class="text-gray-500 text-sm">Lade... (kann etwas dauern)</p>
+        <div id="ff-savings">
+            <p class="text-gray-500 text-sm">Klicke "Berechnen" um die Einsparungen zu laden.</p>
         </div>
     </div>
 
-    <!-- Nodes -->
-    {% if nodes %}
-    <div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
-        <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Nodes</h2>
-        <div class="space-y-2">
-            {% for node in nodes %}
-            <div class="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
-                <div>
-                    <p class="text-sm text-gray-200">{{ node.name }}</p>
-                    <p class="text-xs text-gray-500">v{{ node.version }}</p>
-                </div>
-                <span class="text-xs text-gray-400">{{ node.runners }} runner(s)</span>
-            </div>
-            {% endfor %}
-        </div>
-    </div>
-    {% endif %}
+    <!-- Nodes (lazy load) -->
+    <div
+        id="ff-nodes-wrapper"
+        hx-get="/fileflows/partial/nodes"
+        hx-trigger="load delay:500ms"
+        hx-swap="outerHTML"
+    ></div>
 
     {% endif %}
 </div>

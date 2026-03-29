@@ -38,7 +38,7 @@ async def partial_metrics(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse(NOT_CONFIGURED)
     try:
-        metrics = ctrl.get_live_metrics()
+        metrics = await ctrl.get_live_metrics()
         return templates.TemplateResponse("partials/live_metrics.html", {
             "request": request,
             "metrics": metrics
@@ -53,7 +53,7 @@ async def partial_status(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse(NOT_CONFIGURED)
     try:
-        status = ctrl.get_system_status()
+        status = await ctrl.get_system_status()
         return templates.TemplateResponse("partials/system_status.html", {
             "request": request,
             "status": status
@@ -68,7 +68,7 @@ async def partial_disks(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse(NOT_CONFIGURED)
     try:
-        disks = ctrl.get_disk_health()
+        disks = await ctrl.get_disk_health()
         return templates.TemplateResponse("partials/disk_health.html", {
             "request": request,
             "disks": disks
@@ -83,7 +83,7 @@ async def partial_shares(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse(NOT_CONFIGURED)
     try:
-        shares = ctrl.get_shares()
+        shares = await ctrl.get_shares()
         return templates.TemplateResponse("partials/shares.html", {
             "request": request,
             "shares": shares
@@ -98,7 +98,7 @@ async def partial_notifications(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse("")
     try:
-        notifications = ctrl.get_notifications()
+        notifications = await ctrl.get_notifications()
         if not notifications:
             return HTMLResponse("")
         return templates.TemplateResponse("partials/notifications_banner.html", {
@@ -115,7 +115,7 @@ async def system_reboot(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse(NOT_CONFIGURED)
     try:
-        ctrl.reboot()
+        await ctrl.reboot()
         return HTMLResponse("""
         <div class="bg-yellow-900/30 border border-yellow-700 rounded-lg p-3 text-yellow-300 text-sm">
             Reboot wird durchgeführt... Server ist gleich nicht mehr erreichbar.
@@ -130,7 +130,7 @@ async def system_shutdown(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse(NOT_CONFIGURED)
     try:
-        ctrl.shutdown()
+        await ctrl.shutdown()
         return HTMLResponse("""
         <div class="bg-red-900/30 border border-red-700 rounded-lg p-3 text-red-300 text-sm">
             Shutdown wird durchgeführt... Server fährt herunter.
@@ -145,7 +145,7 @@ async def partial_parity(request: Request, auth=Depends(require_auth)):
     if not ctrl:
         return HTMLResponse("")
     try:
-        parity_history = ctrl.get_parity_history()
+        parity_history = await ctrl.get_parity_history()
         if not parity_history:
             return HTMLResponse('<p class="text-gray-500 text-sm">Keine Parity-Historie.</p>')
         return templates.TemplateResponse("partials/parity_history.html", {

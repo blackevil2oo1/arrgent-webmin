@@ -38,7 +38,7 @@
     <div
         id="system-notifications"
         hx-get="/system/partial/notifications"
-        hx-trigger="load"
+        hx-trigger="load delay:100ms"
         hx-swap="innerHTML"
         class="space-y-2"
     ></div>
@@ -67,7 +67,7 @@
         <div
             id="system-status"
             hx-get="/system/partial/status"
-            hx-trigger="load, every 60s"
+            hx-trigger="load delay:300ms, every 60s"
             hx-swap="innerHTML"
             data-poll-url="/system/partial/status"
             data-poll-interval="every 60s"
@@ -85,7 +85,7 @@
         <div
             id="disk-health"
             hx-get="/system/partial/disks"
-            hx-trigger="load, every 60s"
+            hx-trigger="load delay:600ms, every 60s"
             hx-swap="innerHTML"
             data-poll-url="/system/partial/disks"
             data-poll-interval="every 60s"
@@ -108,7 +108,7 @@
         <div
             id="shares-list"
             hx-get="/system/partial/shares"
-            hx-trigger="load"
+            hx-trigger="load delay:900ms"
             hx-swap="innerHTML"
         >
             <p class="text-gray-500 text-sm">Lade...</p>
@@ -121,7 +121,7 @@
         <div
             id="parity-history"
             hx-get="/system/partial/parity"
-            hx-trigger="load"
+            hx-trigger="load delay:1200ms"
             hx-swap="innerHTML"
         >
             <p class="text-gray-500 text-sm">Lade...</p>

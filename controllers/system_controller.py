@@ -15,9 +15,9 @@ class SystemController(BaseController):
             "Content-Type": "application/json"
         }
 
-    def _graphql(self, query: str, timeout: float = SHORT_TIMEOUT) -> dict:
-        with httpx.Client(timeout=timeout, follow_redirects=True, verify=False) as client:
-            resp = client.post(
+    async def _graphql(self, query: str, timeout: float = SHORT_TIMEOUT) -> dict:
+        async with httpx.AsyncClient(timeout=timeout, follow_redirects=True, verify=False) as client:
+            resp = await client.post(
                 f"{self.base_url}/graphql",
                 headers=self._gql_headers(),
                 json={"query": query}
@@ -25,7 +25,7 @@ class SystemController(BaseController):
             resp.raise_for_status()
             return resp.json()
 
-    def get_system_status(self) -> dict:
+    async def get_system_status(self) -> dict:
         query = """
         {
           info {
@@ -41,7 +41,7 @@ class SystemController(BaseController):
           }
         }
         """
-        data = self._graphql(query)
+        data = await self._graphql(query)
         info = data.get("data", {}).get("info", {})
         array_data = data.get("data", {}).get("array", {})
 
@@ -70,9 +70,9 @@ class SystemController(BaseController):
             "uptime_since": info.get("os", {}).get("uptime", "")
         }
 
-    def get_live_metrics(self) -> dict:
+    async def get_live_metrics(self) -> dict:
         query = "{ metrics { cpu { percentTotal } memory { total used percentTotal } } }"
-        data = self._graphql(query, timeout=10.0)
+        data = await self._graphql(query, timeout=10.0)
         metrics = data.get("data", {}).get("metrics", {})
         cpu = metrics.get("cpu", {})
         mem = metrics.get("memory", {})
@@ -85,11 +85,11 @@ class SystemController(BaseController):
             "ram_total_gb": round(ram_total / (1024 ** 3), 1) if ram_total else 0,
         }
 
-    def get_notifications(self) -> list[dict]:
+    async def get_notifications(self) -> list[dict]:
         query = """{ notifications { warningsAndAlerts {
             id title description importance timestamp
         } } }"""
-        data = self._graphql(query)
+        data = await self._graphql(query)
         alerts = data.get("data", {}).get("notifications", {}).get("warningsAndAlerts", [])
         return [
             {
@@ -102,11 +102,11 @@ class SystemController(BaseController):
             for a in alerts
         ]
 
-    def get_shares(self) -> list[dict]:
+    async def get_shares(self) -> list[dict]:
         # Note: Unraid GraphQL API returns size=0 for all shares (not calculated server-side).
         # Only free space on the underlying disk/pool is available.
         query = "{ shares { name free } }"
-        data = self._graphql(query)
+        data = await self._graphql(query)
         shares = data.get("data", {}).get("shares", [])
         result = []
         for s in shares:
@@ -120,9 +120,9 @@ class SystemController(BaseController):
             })
         return sorted(result, key=lambda x: x["name"].lower())
 
-    def get_parity_history(self) -> list[dict]:
+    async def get_parity_history(self) -> list[dict]:
         query = "{ parityHistory { date duration speed status } }"
-        data = self._graphql(query)
+        data = await self._graphql(query)
         history = data.get("data", {}).get("parityHistory", [])
         return [
             {
@@ -134,15 +134,15 @@ class SystemController(BaseController):
             for h in history[:10]
         ]
 
-    def reboot(self) -> bool:
-        data = self._graphql("mutation { reboot }", timeout=10.0)
+    async def reboot(self) -> bool:
+        data = await self._graphql("mutation { reboot }", timeout=10.0)
         return data.get("data", {}).get("reboot", False)
 
-    def shutdown(self) -> bool:
-        data = self._graphql("mutation { shutdown }", timeout=10.0)
+    async def shutdown(self) -> bool:
+        data = await self._graphql("mutation { shutdown }", timeout=10.0)
         return data.get("data", {}).get("shutdown", False)
 
-    def get_disk_health(self) -> list[dict]:
+    async def get_disk_health(self) -> list[dict]:
         query = """
         {
           disks {
@@ -153,7 +153,7 @@ class SystemController(BaseController):
           }
         }
         """
-        data = self._graphql(query, timeout=TIMEOUT)
+        data = await self._graphql(query, timeout=TIMEOUT)
         disks = data.get("data", {}).get("disks", [])
 
         result = []

@@ -1,0 +1,14 @@
+<div class="bg-gray-900 rounded-xl border border-gray-800 p-4">
+    <h2 class="text-sm font-semibold text-gray-400 uppercase tracking-wide mb-3">Nodes</h2>
+    <div class="space-y-2">
+        {% for node in nodes %}
+        <div class="flex items-center justify-between py-2 border-b border-gray-800 last:border-0">
+            <div>
+                <p class="text-sm text-gray-200">{{ node.name }}</p>
+                <p class="text-xs text-gray-500">v{{ node.version }}</p>
+            </div>
+            <span class="text-xs text-gray-400">{{ node.runners }} runner(s)</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>

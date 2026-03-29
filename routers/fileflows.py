@@ -1,5 +1,6 @@
 from fastapi import APIRouter, Request, Depends
 from fastapi.responses import HTMLResponse
+import httpx
 
 from templates_config import templates
 from auth import require_auth
@@ -21,28 +22,49 @@ def _get_controller():
     return FileFlowsController(cfg.url)
 
 
+def _error_html(e: Exception, context: str = "") -> str:
+    prefix = f"{context}: " if context else ""
+    if isinstance(e, (httpx.ConnectError, httpx.ConnectTimeout)):
+        msg = f"{prefix}FileFlows nicht erreichbar"
+    elif isinstance(e, httpx.TimeoutException):
+        msg = f"{prefix}Timeout — FileFlows antwortet nicht"
+    elif isinstance(e, httpx.HTTPStatusError):
+        msg = f"{prefix}API-Fehler (HTTP {e.response.status_code})"
+    else:
+        msg = f"{prefix}Fehler: {type(e).__name__}"
+    return f'<div class="text-red-400 p-2 text-sm">{msg}</div>'
+
+
 @router.get("", response_class=HTMLResponse)
 async def fileflows_page(request: Request, auth=Depends(require_auth)):
     cfg = get_app_config("fileflows")
     ctrl = _get_controller()
     configured = ctrl is not None
-
-    nodes = None
-    if configured:
-        try:
-            nodes = ctrl.get_nodes()
-        except Exception:
-            nodes = []
-
     container_name = cfg.container_name
 
     return templates.TemplateResponse("fileflows.html", {
         "request": request,
         "title": "FileFlows",
         "configured": configured,
-        "nodes": nodes,
         "container_name": container_name,
     })
+
+
+@router.get("/partial/nodes", response_class=HTMLResponse)
+async def partial_nodes(request: Request, auth=Depends(require_auth)):
+    ctrl = _get_controller()
+    if not ctrl:
+        return HTMLResponse("")
+    try:
+        nodes = ctrl.get_nodes()
+        if not nodes:
+            return HTMLResponse("")
+        return templates.TemplateResponse("partials/fileflows_nodes.html", {
+            "request": request,
+            "nodes": nodes,
+        })
+    except Exception:
+        return HTMLResponse("")
 
 
 @router.get("/partial/savings", response_class=HTMLResponse)
@@ -57,7 +79,7 @@ async def partial_savings(request: Request, auth=Depends(require_auth)):
             "savings": savings
         })
     except Exception as e:
-        return HTMLResponse(f'<div class="text-red-400 p-3 text-sm">Savings error: {e}</div>')
+        return HTMLResponse(_error_html(e))
 
 
 @router.get("/partial/status", response_class=HTMLResponse)
@@ -73,7 +95,7 @@ async def partial_status(request: Request, auth=Depends(require_auth)):
             "ff_status": ff_status
         })
     except Exception as e:
-        return HTMLResponse(f'<div class="text-red-400 p-2 text-sm">FileFlows error: {e}</div>')
+        return HTMLResponse(_error_html(e))
 
 
 @router.post("/container/start", response_class=HTMLResponse)
