@@ -16,7 +16,7 @@
 </div>
 
 <!-- Toolbar -->
-<div class="flex items-center gap-2 mb-3">
+<div class="flex items-center gap-2 mb-3 flex-wrap">
     <form
         hx-post="/files/upload?path={{ urlquote(current_path) }}"
         hx-target="#file-browser"
@@ -63,8 +63,28 @@
 <!-- File list -->
 {% if entries %}
 <div class="bg-gray-900 rounded-xl border border-gray-800 overflow-hidden">
+    <!-- Select-all header -->
+    <div class="flex items-center gap-2 px-4 py-2 border-b border-gray-700 bg-gray-800/60">
+        <input
+            type="checkbox"
+            id="select-all-cb"
+            onchange="fbToggleAll(this)"
+            class="w-3.5 h-3.5 rounded border-gray-600 bg-gray-700 text-blue-500 cursor-pointer shrink-0"
+        >
+        <span class="text-xs text-gray-500 select-none">Alle auswählen</span>
+        <span id="fb-sel-count" class="text-xs text-blue-400 ml-1 hidden"></span>
+    </div>
+
     {% for item in entries %}
     <div id="entry-{{ loop.index }}" class="flex items-center gap-2 px-4 py-2.5 border-b border-gray-800 last:border-0 hover:bg-gray-800/40">
+        <!-- Checkbox -->
+        <input
+            type="checkbox"
+            class="entry-cb w-3.5 h-3.5 rounded border-gray-600 bg-gray-700 text-blue-500 cursor-pointer shrink-0"
+            value="{{ item.path }}"
+            onchange="fbUpdateSelection()"
+        >
+
         <!-- Icon -->
         {% if item.is_dir %}
         <svg class="w-4 h-4 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
@@ -131,3 +151,192 @@
     Leeres Verzeichnis
 </div>
 {% endif %}
+
+<!-- Multi-select floating toolbar -->
+<div id="fb-toolbar" class="hidden fixed bottom-20 md:bottom-6 left-1/2 -translate-x-1/2 z-30
+     bg-gray-800 border border-gray-600 rounded-xl shadow-2xl px-4 py-2.5
+     flex items-center gap-2 whitespace-nowrap">
+    <span id="fb-toolbar-count" class="text-xs text-gray-300 mr-1"></span>
+    <button type="button" onclick="fbOpenMove()"
+        class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"/></svg>
+        Verschieben
+    </button>
+    <button type="button" onclick="fbOpenCopy()"
+        class="bg-green-600 hover:bg-green-700 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 012 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+        Kopieren
+    </button>
+    <button type="button" onclick="fbDeleteSelected()"
+        class="bg-red-700 hover:bg-red-600 text-white text-xs px-3 py-1.5 rounded-lg flex items-center gap-1.5">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+        Löschen
+    </button>
+    <button type="button" onclick="fbClearSelection()" class="text-gray-500 hover:text-white p-1.5 rounded ml-1" title="Auswahl aufheben">
+        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+    </button>
+</div>
+
+<!-- Destination picker modal -->
+<div id="fb-modal" class="hidden fixed inset-0 bg-black/70 z-40 flex items-center justify-center p-4">
+    <div class="bg-gray-900 border border-gray-700 rounded-xl w-full max-w-md shadow-2xl flex flex-col max-h-[80vh]">
+        <!-- Modal header -->
+        <div class="flex items-center justify-between px-4 py-3 border-b border-gray-800 shrink-0">
+            <h3 id="fb-modal-title" class="text-sm font-semibold text-gray-100">Ziel auswählen</h3>
+            <button type="button" onclick="fbCloseModal()" class="text-gray-500 hover:text-gray-300 p-1 rounded">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+            </button>
+        </div>
+        <!-- Dir picker content -->
+        <div id="dir-picker" class="flex-1 overflow-y-auto p-4 min-h-0">
+            <p class="text-gray-500 text-xs text-center py-4">Lade...</p>
+        </div>
+        <!-- Modal footer -->
+        <div class="px-4 py-3 border-t border-gray-800 shrink-0">
+            <div class="text-xs text-gray-500 mb-2 truncate">
+                Ziel: <span id="fb-modal-dest" class="text-gray-300"></span>
+            </div>
+            <div class="flex gap-2 justify-end">
+                <button type="button" onclick="fbCloseModal()"
+                    class="bg-gray-700 hover:bg-gray-600 text-white text-xs px-3 py-1.5 rounded-lg">Abbrechen</button>
+                <button type="button" id="fb-modal-confirm-btn" onclick="fbConfirmAction()"
+                    class="bg-blue-600 hover:bg-blue-700 text-white text-xs px-3 py-1.5 rounded-lg">Hierher</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const CURRENT_PATH = {{ current_path | tojson }};
+    let pickerPath = CURRENT_PATH;
+    let pendingAction = null;
+
+    function getChecked() {
+        return Array.from(document.querySelectorAll('.entry-cb:checked')).map(c => c.value);
+    }
+
+    window.fbUpdateSelection = function () {
+        const all = document.querySelectorAll('.entry-cb');
+        const checked = document.querySelectorAll('.entry-cb:checked');
+        const n = checked.length;
+        const toolbar = document.getElementById('fb-toolbar');
+        const countEl = document.getElementById('fb-toolbar-count');
+        const selCount = document.getElementById('fb-sel-count');
+        const sa = document.getElementById('select-all-cb');
+
+        if (n > 0) {
+            toolbar.classList.remove('hidden');
+            countEl.textContent = n + ' ausgewählt';
+            selCount.textContent = n + ' ausgewählt';
+            selCount.classList.remove('hidden');
+        } else {
+            toolbar.classList.add('hidden');
+            selCount.classList.add('hidden');
+        }
+        if (sa) {
+            sa.checked = n === all.length && all.length > 0;
+            sa.indeterminate = n > 0 && n < all.length;
+        }
+    };
+
+    window.fbToggleAll = function (cb) {
+        document.querySelectorAll('.entry-cb').forEach(c => c.checked = cb.checked);
+        fbUpdateSelection();
+    };
+
+    window.fbClearSelection = function () {
+        document.querySelectorAll('.entry-cb').forEach(c => c.checked = false);
+        const sa = document.getElementById('select-all-cb');
+        if (sa) { sa.checked = false; sa.indeterminate = false; }
+        fbUpdateSelection();
+    };
+
+    window.fbOpenMove = function () {
+        pendingAction = 'move';
+        document.getElementById('fb-modal-title').textContent = 'Verschieben nach …';
+        document.getElementById('fb-modal-confirm-btn').textContent = 'Hierher verschieben';
+        fbOpenModal();
+    };
+
+    window.fbOpenCopy = function () {
+        pendingAction = 'copy';
+        document.getElementById('fb-modal-title').textContent = 'Kopieren nach …';
+        document.getElementById('fb-modal-confirm-btn').textContent = 'Hierher kopieren';
+        fbOpenModal();
+    };
+
+    function fbOpenModal() {
+        pickerPath = CURRENT_PATH;
+        document.getElementById('fb-modal-dest').textContent = pickerPath;
+        document.getElementById('fb-modal').classList.remove('hidden');
+        fbLoadPicker(pickerPath);
+    }
+
+    window.fbCloseModal = function () {
+        document.getElementById('fb-modal').classList.add('hidden');
+        pendingAction = null;
+    };
+
+    window.pickDirectory = function (path) {
+        pickerPath = path;
+        document.getElementById('fb-modal-dest').textContent = path;
+        fbLoadPicker(path);
+    };
+
+    function fbLoadPicker(path) {
+        htmx.ajax('GET', '/files/pick?path=' + encodeURIComponent(path), {
+            target: '#dir-picker',
+            swap: 'innerHTML'
+        });
+    }
+
+    window.fbConfirmAction = function () {
+        if (!pendingAction) return;
+        const paths = getChecked();
+        if (!paths.length) return;
+        const dest = pickerPath;
+        fbCloseModal();
+        fbSubmitAction(pendingAction, paths, dest);
+        fbClearSelection();
+    };
+
+    window.fbDeleteSelected = function () {
+        const paths = getChecked();
+        if (!paths.length) return;
+        if (!confirm(paths.length + ' Element(e) wirklich löschen?')) return;
+        fbSubmitAction('delete-multiple', paths, null);
+        fbClearSelection();
+    };
+
+    function fbSubmitAction(action, paths, destination) {
+        const form = document.createElement('form');
+        form.style.display = 'none';
+        form.setAttribute('hx-post', '/files/' + action);
+        form.setAttribute('hx-target', '#file-browser');
+        form.setAttribute('hx-swap', 'innerHTML');
+
+        const addField = (name, value) => {
+            const inp = document.createElement('input');
+            inp.type = 'hidden';
+            inp.name = name;
+            inp.value = value;
+            form.appendChild(inp);
+        };
+
+        addField('current_path', CURRENT_PATH);
+        if (destination !== null) addField('destination', destination);
+        paths.forEach(p => addField('paths', p));
+
+        document.body.appendChild(form);
+        htmx.process(form);
+        form.requestSubmit();
+        setTimeout(() => form.remove(), 3000);
+    }
+
+    // Close modal on backdrop click
+    document.getElementById('fb-modal').addEventListener('click', function (e) {
+        if (e.target === this) fbCloseModal();
+    });
+})();
+</script>

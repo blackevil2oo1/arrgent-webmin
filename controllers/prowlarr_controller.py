@@ -54,7 +54,7 @@ class ProwlarrController(BaseController):
         result = []
         for r in records:
             result.append({
-                "query": r.get("query", ""),
+                "query": r.get("sourceTitle") or r.get("data", {}).get("query") or "",
                 "indexer": r.get("indexer", ""),
                 "successful": r.get("successful", False),
                 "date": r.get("date", "")[:16].replace("T", " ") if r.get("date") else "",

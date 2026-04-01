@@ -9,7 +9,7 @@ class HuntarrController:
 
     def get_status(self) -> dict:
         with httpx.Client(timeout=TIMEOUT) as client:
-            resp = client.get(f"{self.base_url}/api/v1/status")
+            resp = client.get(f"{self.base_url}/api/status")
             resp.raise_for_status()
             data = resp.json()
         return {
@@ -20,7 +20,7 @@ class HuntarrController:
 
     def get_logs(self, limit: int = 30) -> list[str]:
         with httpx.Client(timeout=TIMEOUT) as client:
-            resp = client.get(f"{self.base_url}/api/v1/logs", params={"limit": limit})
+            resp = client.get(f"{self.base_url}/api/logs", params={"limit": limit})
             resp.raise_for_status()
             data = resp.json()
         if isinstance(data, list):
@@ -29,6 +29,6 @@ class HuntarrController:
 
     def trigger(self, app: str) -> dict:
         with httpx.Client(timeout=TIMEOUT) as client:
-            resp = client.post(f"{self.base_url}/api/v1/trigger/{app}")
+            resp = client.post(f"{self.base_url}/api/trigger/{app}")
             resp.raise_for_status()
             return resp.json() if resp.content else {"ok": True}

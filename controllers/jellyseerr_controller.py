@@ -21,6 +21,20 @@ class JellyseerrController:
             resp.raise_for_status()
             return resp.json()
 
+    def _get_media_title(self, media_type: str, tmdb_id: int | None, tvdb_id: int | None) -> str:
+        try:
+            if media_type == "movie" and tmdb_id:
+                data = self._get(f"/api/v1/movie/{tmdb_id}")
+                return data.get("title") or data.get("originalTitle") or ""
+            elif media_type == "tv":
+                search_id = tvdb_id or tmdb_id
+                if search_id:
+                    data = self._get(f"/api/v1/tv/{search_id}")
+                    return data.get("name") or data.get("originalName") or ""
+        except Exception:
+            pass
+        return ""
+
     def _post(self, path: str, json: dict = None) -> dict:
         with httpx.Client(timeout=TIMEOUT) as client:
             resp = client.post(
@@ -49,10 +63,18 @@ class JellyseerrController:
         for r in results:
             media = r.get("media", {})
             req_by = r.get("requestedBy", {})
+            title = (media.get("title") or media.get("originalTitle") or
+                     media.get("name") or media.get("originalName") or "")
+            if not title:
+                title = self._get_media_title(
+                    media.get("mediaType", ""),
+                    media.get("tmdbId"),
+                    media.get("tvdbId"),
+                )
             requests.append({
                 "id": r.get("id"),
                 "type": media.get("mediaType", ""),
-                "title": media.get("title") or media.get("originalTitle") or media.get("name") or media.get("originalName") or "",
+                "title": title,
                 "tmdb_id": media.get("tmdbId"),
                 "poster": media.get("posterPath", ""),
                 "requested_by": req_by.get("displayName") or req_by.get("username") or "",
@@ -65,14 +87,22 @@ class JellyseerrController:
         data = self._get("/api/v1/request", params={"take": take, "skip": 0, "sort": "added"})
         results = data.get("results", []) if isinstance(data, dict) else []
         requests = []
+        status_map = {1: "Pending", 2: "Approved", 3: "Declined", 4: "Available", 5: "Processing"}
         for r in results:
             media = r.get("media", {})
             req_by = r.get("requestedBy", {})
-            status_map = {1: "Pending", 2: "Approved", 3: "Declined", 4: "Available", 5: "Processing"}
+            title = (media.get("title") or media.get("originalTitle") or
+                     media.get("name") or media.get("originalName") or "")
+            if not title:
+                title = self._get_media_title(
+                    media.get("mediaType", ""),
+                    media.get("tmdbId"),
+                    media.get("tvdbId"),
+                )
             requests.append({
                 "id": r.get("id"),
                 "type": media.get("mediaType", ""),
-                "title": media.get("title") or media.get("originalTitle") or media.get("name") or media.get("originalName") or "",
+                "title": title,
                 "requested_by": req_by.get("displayName") or req_by.get("username") or "",
                 "created_at": r.get("createdAt", "")[:10] if r.get("createdAt") else "",
                 "status": status_map.get(r.get("status", 1), "Unknown"),

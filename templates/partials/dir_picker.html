@@ -1,0 +1,29 @@
+<!-- Breadcrumb -->
+<div class="flex items-center gap-1 text-xs mb-3 flex-wrap">
+    {% for crumb in breadcrumbs %}
+    {% if not loop.last %}
+    <button type="button" onclick="pickDirectory({{ crumb.path | tojson }})" class="text-blue-400 hover:text-blue-300">{{ crumb.name }}</button>
+    <span class="text-gray-600">/</span>
+    {% else %}
+    <span class="text-gray-300 font-medium">{{ crumb.name }}</span>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<!-- Subdirectory list -->
+{% if entries %}
+<div class="space-y-0.5">
+    {% for item in entries %}
+    <div
+        class="flex items-center gap-2 px-2 py-1.5 rounded-lg hover:bg-gray-700 cursor-pointer select-none"
+        onclick="pickDirectory({{ item.path | tojson }})"
+    >
+        <svg class="w-4 h-4 text-yellow-400 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M2 6a2 2 0 012-2h5l2 2h5a2 2 0 012 2v6a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/></svg>
+        <span class="text-sm text-gray-200 truncate flex-1">{{ item.name }}</span>
+        <svg class="w-3.5 h-3.5 text-gray-600 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<p class="text-gray-600 text-xs text-center py-6">Keine Unterordner</p>
+{% endif %}

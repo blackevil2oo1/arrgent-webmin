@@ -189,6 +189,108 @@ async def delete(
     return _browser_response(request, safe_current)
 
 
+@router.post("/move", response_class=HTMLResponse)
+async def move_files(
+    request: Request,
+    paths: list[str] = Form(...),
+    destination: str = Form(...),
+    current_path: str = Form(...),
+    auth=Depends(require_auth),
+):
+    try:
+        safe_dest = _safe_path(destination)
+        safe_current = _safe_path(current_path)
+    except ValueError as e:
+        return HTMLResponse(f'<div class="text-red-400 p-4 text-sm">{e}</div>')
+    if not os.path.isdir(safe_dest):
+        return HTMLResponse('<div class="text-red-400 p-4 text-sm">Ziel ist kein Verzeichnis.</div>')
+    errors = []
+    for path in paths:
+        try:
+            safe = _safe_path(path)
+            if safe == ALLOWED_ROOT:
+                continue
+            shutil.move(safe, os.path.join(safe_dest, os.path.basename(safe)))
+        except Exception as e:
+            errors.append(str(e))
+    return _browser_response(request, safe_current)
+
+
+@router.post("/copy", response_class=HTMLResponse)
+async def copy_files(
+    request: Request,
+    paths: list[str] = Form(...),
+    destination: str = Form(...),
+    current_path: str = Form(...),
+    auth=Depends(require_auth),
+):
+    try:
+        safe_dest = _safe_path(destination)
+        safe_current = _safe_path(current_path)
+    except ValueError as e:
+        return HTMLResponse(f'<div class="text-red-400 p-4 text-sm">{e}</div>')
+    if not os.path.isdir(safe_dest):
+        return HTMLResponse('<div class="text-red-400 p-4 text-sm">Ziel ist kein Verzeichnis.</div>')
+    for path in paths:
+        try:
+            safe = _safe_path(path)
+            dest_path = os.path.join(safe_dest, os.path.basename(safe))
+            if os.path.isdir(safe):
+                shutil.copytree(safe, dest_path)
+            else:
+                shutil.copy2(safe, dest_path)
+        except Exception:
+            pass
+    return _browser_response(request, safe_current)
+
+
+@router.post("/delete-multiple", response_class=HTMLResponse)
+async def delete_multiple(
+    request: Request,
+    paths: list[str] = Form(...),
+    current_path: str = Form(...),
+    auth=Depends(require_auth),
+):
+    try:
+        safe_current = _safe_path(current_path)
+    except ValueError as e:
+        return HTMLResponse(f'<div class="text-red-400 p-4 text-sm">{e}</div>')
+    for path in paths:
+        try:
+            safe = _safe_path(path)
+            if safe == ALLOWED_ROOT:
+                continue
+            if os.path.isdir(safe):
+                shutil.rmtree(safe)
+            else:
+                os.remove(safe)
+        except Exception:
+            pass
+    return _browser_response(request, safe_current)
+
+
+@router.get("/pick", response_class=HTMLResponse)
+async def pick_directory(
+    request: Request,
+    path: str = Query(default=None),
+    auth=Depends(require_auth),
+):
+    try:
+        safe = _safe_path(path)
+    except ValueError as e:
+        return HTMLResponse(f'<div class="text-red-400 p-4 text-sm">{e}</div>')
+    if not os.path.isdir(safe):
+        return HTMLResponse('<div class="text-red-400 p-4 text-sm">Kein Verzeichnis.</div>')
+    dir_entries = [e for e in _get_entries(safe) if e["is_dir"]]
+    breadcrumbs = _get_breadcrumbs(safe)
+    return templates.TemplateResponse("partials/dir_picker.html", {
+        "request": request,
+        "current_path": safe,
+        "entries": dir_entries,
+        "breadcrumbs": breadcrumbs,
+    })
+
+
 @router.get("/rename-form", response_class=HTMLResponse)
 async def rename_form(
     request: Request,
